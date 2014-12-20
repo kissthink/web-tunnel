@@ -383,6 +383,8 @@ void free_buf(http_mgmt* mgmt, http_buf_info* buf)
 static void release_prepare(http_mgmt* mgmt)
 {
     if(NULL != mgmt->buf_prepare.curr) {
+        //TODO is this ok?
+        list_del(&mgmt->buf_prepare.curr->node);
         free_buf(mgmt, mgmt->buf_prepare.curr);
     }
     mgmt->buf_prepare.curr = NULL;
@@ -1311,10 +1313,12 @@ void http_context_release(http_mgmt* mgmt, http_context* ctx)
 
     // Free bufs but not use free_buf hear
     if(NULL != ctx->buf_read.curr) {
+        list_del_init(&ctx->buf_read.curr->node);
         free_buf(mgmt, ctx->buf_read.curr);
         ctx->buf_read.curr = NULL;
     }
     if(NULL != ctx->buf_write.curr) {
+        list_del_init(&ctx->buf_write.curr->node);
         free_buf(mgmt, ctx->buf_write.curr);
         ctx->buf_read.curr = NULL;
     }
@@ -1944,6 +1948,7 @@ int tcp_client_release(http_mgmt* mgmt, tcp_client_context* tcp_client)
     }
 
     if(NULL != tcp_client->buf_read.curr) {
+        list_del_init(&tcp_client->buf_read.curr->node);
         free_buf(mgmt, tcp_client->buf_read.curr);
     }
     list_splice(&tcp_client->buf_read.list_todo, &mgmt->http_buf_caches);
@@ -2070,7 +2075,7 @@ int tcp_server_run(http_mgmt* mgmt)
 
 int process_tcp_forward(http_mgmt* mgmt)
 {
-    tcp_forward_context* tcp_forward;
+    tcp_forward_context* tcp_forward = NULL;
     unsigned short seq, port;
     unsigned int type;
     int the_len = 8;
@@ -2435,7 +2440,7 @@ int tcp_forward_release(http_mgmt* mgmt, tcp_forward_context* tcp_forward)
     //}
 
     tcp_forward->status = CALLING_FINISH;
-    list_del(&tcp_forward->node);
+    list_del_init(&tcp_forward->node);
 
     lwsl_info("delete tcp_forward seq=%d \n", tcp_forward->seq);
 
@@ -2451,6 +2456,7 @@ int tcp_forward_release(http_mgmt* mgmt, tcp_forward_context* tcp_forward)
     list_splice(&tcp_forward->buf_read.list_todo, &mgmt->http_buf_caches); */
 
     if(NULL != tcp_forward->buf_write.curr) {
+        list_del_init(&tcp_forward->buf_write.curr->node);
         free_buf(mgmt, tcp_forward->buf_write.curr);
     }
     list_splice(&tcp_forward->buf_write.list_todo, &mgmt->http_buf_caches);

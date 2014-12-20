@@ -1370,6 +1370,10 @@ app.get("/__do-cam", function (req, res) {
     pipeFile(res, "jswebcam.html");
 });
 
+//app.get("/__do-cam", function (req, res) {
+//    pipeFile(res, "webcam.html");
+//});
+
 app.get("/__camsnap", function (req, res) {
     var sess = req.session;
     if(typeof sess.username == "undefined") {

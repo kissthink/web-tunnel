@@ -5,7 +5,7 @@
 #include "coroutine.h"
 
 #define CALLER_CACHES   256
-#define HTTPBUF_CACHES  256
+#define HTTPBUF_CACHES  600
 #define HTTP_BUF_SIZE   2048
 #define HTTP_CHUNK_MAX  32
 #define HTTP_IN_MAX     20480
